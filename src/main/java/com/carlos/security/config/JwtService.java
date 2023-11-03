@@ -1,12 +1,35 @@
 package com.carlos.security.config;
 
+import io.jsonwebtoken.security.Keys;
+import java.security.Key;
+
+import org.hibernate.bytecode.internal.bytebuddy.PrivateAccessorException;
 import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 
 @Service
 public class JwtService {
+  private static final String SECRET_KEY = "400E635266556A586E3272357538782F4428472B4B6250645367566B5970";
 
   public String extractUsername(String token) {
     return null;
+  }
+
+  private Claims extractAllClaims(String token){
+    return Jwts
+        .parserBuilder()
+        .setSigningKey(getSignInKey())
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+
+  }
+  private Key getSignInKey(){
+    byte [] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+    return Keys.hmacShaKeyFor(keyBytes);
   }
 
 }
