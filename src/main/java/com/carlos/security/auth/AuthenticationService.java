@@ -2,12 +2,13 @@ package com.carlos.security.auth;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.User;
+//import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.carlos.security.config.JwtService;
 import com.carlos.security.user.Role;
+import com.carlos.security.user.User;
 import com.carlos.security.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
