@@ -3,6 +3,9 @@ package com.carlos.security.config;
 import java.io.IOException;
 
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -12,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
+  private final UserDetailsService userDetailsService;
 
   public JwtAuthenticationFilter(JwtService jwtService) {
     this.jwtService = jwtService;
@@ -32,6 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
     jwt = authHeader.substring(7);
     userEmail = jwtService.extractUsername(jwt);//todo extract the userEmail from JWT token
+    if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null){
+      UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+    }
     //throw new Un supportedOperationException("Unimplemented method 'doFilterInternal'");
   }
   
