@@ -3,9 +3,11 @@ package com.carlos.security.config;
 import java.io.IOException;
 
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -38,8 +40,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     userEmail = jwtService.extractUsername(jwt);//todo extract the userEmail from JWT token
     if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null){
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+      if(jwtService.isTokenValid(jwt, userDetails)){
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+          userDetails,
+          null,
+          userDetails.getAuthorities()
+          );
+          authToken.setDetails(
+            new WebAuthenticationDetailsSource().buildDetails(request)
+          );
+          SecurityContextHolder.getContext().setAuthentication(authToken);
+      }
     }
-    //throw new Un supportedOperationException("Unimplemented method 'doFilterInternal'");
+    filterChain.doFilter(request, response);
   }
-  
 }
