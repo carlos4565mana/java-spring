@@ -37,21 +37,25 @@ public class AuthenticationService {
     .build();
   var savedUser =  repository.save(user);
   var jwtToken = jwtService.generateToken(user);
-  var token = Token.builder()
-          .user(savedUser)
-          .token(jwtToken)
-          .tokenType(String.valueOf(TokenType.BEARER))
-          .revoked(false)
-          .expired(false)
-          .build();
-    tokenrepository.save(token);
+    saveUserToken(savedUser, jwtToken);
     return AuthenticationResponse.builder()
     .token(jwtToken)
     .build();
 
   }
 
-public AuthenticationResponse authenticate(AuthenticationRequest request) {
+  private void saveUserToken(User user, String jwtToken) {
+    var token = Token.builder()
+            .user(user)
+            .token(jwtToken)
+            .tokenType(String.valueOf(TokenType.BEARER))
+            .revoked(false)
+            .expired(false)
+            .build();
+    tokenrepository.save(token);
+  }
+
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
   authenticationManager.authenticate(
     new UsernamePasswordAuthenticationToken(
       request.getEmail(),
