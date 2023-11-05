@@ -1,5 +1,8 @@
 package com.carlos.security.auth;
 
+import com.carlos.security.token.Token;
+import com.carlos.security.token.TokenRepository;
+import com.carlos.security.token.TokenType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 //import org.springframework.security.core.userdetails.User;
@@ -11,6 +14,8 @@ import com.carlos.security.user.Role;
 import com.carlos.security.user.User;
 import com.carlos.security.user.UserRepository;
 
+
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,6 +25,7 @@ public class AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
+  private final TokenRepository tokenrepository;
   
   public AuthenticationResponse register(RegisterRequest request) {
     var user = User.builder()
@@ -29,11 +35,20 @@ public class AuthenticationService {
     .password(passwordEncoder.encode(request.getPassword()))
     .role(request.getRole())
     .build();
-  repository.save(user);
+  var savedUser =  repository.save(user);
   var jwtToken = jwtService.generateToken(user);
+  var token = Token.builder()
+          .user(savedUser)
+          .token(jwtToken)
+          .tokenType(String.valueOf(TokenType.BEARER))
+          .revoked(false)
+          .expired(false)
+          .build();
+    tokenrepository.save(token);
     return AuthenticationResponse.builder()
     .token(jwtToken)
     .build();
+
   }
 
 public AuthenticationResponse authenticate(AuthenticationRequest request) {
