@@ -1,5 +1,6 @@
 package com.carlos.security;
 
+import com.carlos.security.user.Role;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,18 +28,21 @@ public class SecurityApplication {
 			.lastname("Admin")
 			.email("admin@gmail.com")
 			.password("password")
-			.role(ADMIN)
+			.role(Role.ADMIN)
 			.build();
+			System.out.println("admin: " + admin.getRole());
 			System.out.println("Admin token: "+service.register(admin).getToken());
+			System.out.println();
 
 			var manager = RegisterRequest.builder()
 			.firstname("Admin")
 			.lastname("Admin")
 			.email("manager@gmail.com")
 			.password("password")
-			.role(MANAGER)
+			.role(Role.MANAGER)
 			.build();
-			System.out.println("Admin token: "+service.register(manager).getToken());
+			System.out.println("manager: "+manager.getRole());
+			System.out.println("Manager token: "+service.register(manager).getToken());
 		};
 	}
 
