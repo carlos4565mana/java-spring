@@ -45,6 +45,36 @@ public class AuthenticationService {
 
   }
 
+
+
+  public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    authenticationManager.authenticate(
+      new UsernamePasswordAuthenticationToken(
+        request.getEmail(),
+        request.getPassword()
+      )
+    );
+    var user = repository.findByEmail(request.getEmail())
+      .orElseThrow();
+    var jwtToken = jwtService.generateToken(user);
+    revokeAllUserTokens(user);
+    saveUserToken(user, jwtToken);
+    return AuthenticationResponse.builder()
+    .token(jwtToken)
+    .build();
+  }
+
+  private void revokeAllUserTokens(User user){
+    var validUserTokens = tokenrepository.findAllValidTokenByUser(user.getId());
+    if(validUserTokens .isEmpty())
+      return;
+    validUserTokens.forEach(t->{
+      t.setExpired(true);
+      t.setRevoked(true);
+    });
+    tokenrepository.saveAll(validUserTokens);
+
+  }
   private void saveUserToken(User user, String jwtToken) {
     var token = Token.builder()
             .user(user)
@@ -55,22 +85,6 @@ public class AuthenticationService {
             .build();
     tokenrepository.save(token);
   }
-
-  public AuthenticationResponse authenticate(AuthenticationRequest request) {
-  authenticationManager.authenticate(
-    new UsernamePasswordAuthenticationToken(
-      request.getEmail(),
-      request.getPassword()
-    )
-  );
-  var user = repository.findByEmail(request.getEmail())
-    .orElseThrow();
-  var jwtToken = jwtService.generateToken(user);
-  saveUserToken(user, jwtToken);
-  return AuthenticationResponse.builder()
-  .token(jwtToken)
-  .build();
-}
 
   
 }
