@@ -3,10 +3,17 @@ package com.carlos.security.auth;
 import com.carlos.security.token.Token;
 import com.carlos.security.token.TokenRepository;
 import com.carlos.security.token.TokenType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 //import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 
 import com.carlos.security.config.JwtService;
@@ -17,6 +24,8 @@ import com.carlos.security.user.UserRepository;
 
 
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +46,13 @@ public class AuthenticationService {
     .build();
   var savedUser =  repository.save(user);
   var jwtToken = jwtService.generateToken(user);
+  var refreshToken = jwtService.generateRefreshToken(user);
   saveUserToken(savedUser, jwtToken);
     saveUserToken(savedUser, jwtToken);
     return AuthenticationResponse.builder()
-    .acessToken(jwtToken)
-    .build();
+            .acessToken(jwtToken)
+            .refreshToken(refreshToken)
+            .build();
 
   }
 
@@ -86,5 +97,39 @@ public class AuthenticationService {
     tokenrepository.save(token);
   }
 
-  
+
+  public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    final String refreshToken;
+    final String userEmail;
+    if(authHeader == null || !authHeader.startsWith("Bearer ")){
+      return;
+    }
+    refreshToken = authHeader.substring(7);
+    userEmail = jwtService.extractUsername(refreshToken);//todo extract the userEmail from JWT token
+    if(userEmail != null ){
+      var user = this.repository.findByEmail(userEmail).orElseThrow();
+      if (jwtService.isTokenValid(refreshToken, user)) {
+        var accessToken = jwtService.generateToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, accessToken);
+        var authResponse = AuthenticationResponse.builder()
+                .acessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+
+
+      }
+    }
+  }
 }
+
+
+
+
+
+
+
+
