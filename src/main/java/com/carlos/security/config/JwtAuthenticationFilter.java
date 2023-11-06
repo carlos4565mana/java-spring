@@ -2,6 +2,7 @@ package com.carlos.security.config;
 
 import java.io.IOException;
 
+import com.carlos.security.token.TokenRepository;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final UserDetailsService userDetailsService;
+  private final TokenRepository tokenRepository;
 
   @Override
   protected void doFilterInternal(
@@ -40,7 +42,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     userEmail = jwtService.extractUsername(jwt);//todo extract the userEmail from JWT token
     if(userEmail != null && SecurityContextHolder.getContext().getAuthentication()==null){
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-      if(jwtService.isTokenValid(jwt, userDetails)){
+      var isTokenValid = tokenRepository.findByToken(jwt)
+              .map(t-> !t.isExpired() && !t.isRevoked())
+              .orElse(false);
+      if(jwtService.isTokenValid(jwt, userDetails) && isTokenValid){
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
           userDetails,
           null,
