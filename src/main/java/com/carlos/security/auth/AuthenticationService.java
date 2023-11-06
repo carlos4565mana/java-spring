@@ -40,7 +40,7 @@ public class AuthenticationService {
   saveUserToken(savedUser, jwtToken);
     saveUserToken(savedUser, jwtToken);
     return AuthenticationResponse.builder()
-    .token(jwtToken)
+    .acessToken(jwtToken)
     .build();
 
   }
@@ -60,7 +60,7 @@ public class AuthenticationService {
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
     return AuthenticationResponse.builder()
-    .token(jwtToken)
+    .acessToken(jwtToken)
     .build();
   }
 

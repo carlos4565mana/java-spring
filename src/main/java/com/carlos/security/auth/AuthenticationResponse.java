@@ -1,5 +1,6 @@
 package com.carlos.security.auth;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResponse {
-  private String token;
+  @JsonProperty("acess_token")
+  private String acessToken;
+
+  @JsonProperty("refresh_token")
+  private String refreshToken;
 
 }
