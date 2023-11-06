@@ -19,7 +19,7 @@ public class Token {
     private String token;
 
     @Enumerated(EnumType.STRING)
-    private String tokenType;
+    private TokenType tokenType;
 
     private boolean expired;
     private boolean revoked;

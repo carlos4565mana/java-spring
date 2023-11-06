@@ -37,6 +37,7 @@ public class AuthenticationService {
     .build();
   var savedUser =  repository.save(user);
   var jwtToken = jwtService.generateToken(user);
+  saveUserToken(savedUser, jwtToken);
     saveUserToken(savedUser, jwtToken);
     return AuthenticationResponse.builder()
     .token(jwtToken)
@@ -48,7 +49,7 @@ public class AuthenticationService {
     var token = Token.builder()
             .user(user)
             .token(jwtToken)
-            .tokenType(String.valueOf(TokenType.BEARER))
+            .tokenType(TokenType.BEARER)
             .revoked(false)
             .expired(false)
             .build();
@@ -65,6 +66,7 @@ public class AuthenticationService {
   var user = repository.findByEmail(request.getEmail())
     .orElseThrow();
   var jwtToken = jwtService.generateToken(user);
+  saveUserToken(user, jwtToken);
   return AuthenticationResponse.builder()
   .token(jwtToken)
   .build();
