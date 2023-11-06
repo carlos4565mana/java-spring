@@ -19,6 +19,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -69,7 +70,14 @@ public class SecurityConfiguration {
     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     .and()
     .authenticationProvider(authenticationProvider)
-    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class );
+    .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class )
+    .logout()
+    .logoutUrl("/api/v1/auth/logout")
+    .addLogoutHandler(null)
+    .logoutSuccessHandler(
+            (request, response, authentication) ->
+            SecurityContextHolder.clearContext()
+    );
     return http.build();
 
   }
