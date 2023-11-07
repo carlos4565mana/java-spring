@@ -39,6 +39,14 @@ public class AuthenticationController {
   ) throws IOException {
       service.refreshToken(request, response);
   }
+  @PostMapping("/verify")
+  public ResponseEntity<?> verifyCode(
+          @RequestBody VerificationRequest verificationRequest
+  ){
+    return ResponseEntity.ok(service.verifyCode(verificationRequest));
+
+  }
+
 
   
 }

@@ -5,10 +5,12 @@ import com.carlos.security.token.Token;
 import com.carlos.security.token.TokenRepository;
 import com.carlos.security.token.TokenType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 //import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -133,12 +135,27 @@ public class AuthenticationService {
         var authResponse = AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .mfaEnable(false)
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
 
 
       }
     }
+  }
+
+  public AuthenticationResponse verifyCode(VerificationRequest verificationRequest) {
+    User user = repository.findByEmail(verificationRequest.getEmail()).orElseThrow(()->new EntityNotFoundException(
+            String.format("No user found with %s", verificationRequest.getEmail()))
+    );
+    if(tafService.isOtpNotValid(user.getSecret(), verificationRequest.getCode())){
+      throw new BadCredentialsException("Code is not correct!");
+    }
+    var jwtToken = jwtService.generateToken1(user);
+    return AuthenticationResponse.builder()
+            .accessToken(jwtToken)
+            .mfaEnable(user.isMfaEnable())
+            .build();
   }
 }
 
