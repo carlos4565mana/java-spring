@@ -48,6 +48,20 @@ public class SecurityConfiguration {
     .csrf()
     .disable()
     .authorizeHttpRequests()
+    .requestMatchers(
+            "/api/v1/auth/**",
+                      "/v2/api-docs",
+                      "/v3/api-docs",
+                      "/v3/api-docs/**",
+                      "/swagger-recources",
+                      "/swagger-recources/**",
+                      "/configuration/ui",
+                      "/configuration/security",
+                      "/swagger-ui/**",
+                      "webjars/**",
+                       "/swagger-ui.html"
+    )
+    .permitAll()
     .requestMatchers("/api/v1/auth/**")
     .permitAll()
     .requestMatchers("/api/v1/management**").hasAnyRole(ADMIN.name(), MANAGER.name())
