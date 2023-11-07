@@ -72,14 +72,23 @@ public class AuthenticationService {
         request.getPassword()
       )
     );
-    var user = repository.findByEmail(request.getEmail())
-      .orElseThrow();
+    var user = repository.findByEmail(request.getEmail()).orElseThrow();
+    //revokeAllUserTokens(user);
+    //saveUserToken(user, jwtToken);
+    if(user.isMfaEnable()){
+      return AuthenticationResponse.builder()
+              .accessToken("")
+              .refreshToken("")
+              .mfaEnable(true)
+              .build();
+    }
     var jwtToken = jwtService.generateToken1(user);
-    revokeAllUserTokens(user);
-    saveUserToken(user, jwtToken);
+    var refreshToken = jwtService.generateRefreshToken(user);
     return AuthenticationResponse.builder()
-    .accessToken(jwtToken)
-    .build();
+          .accessToken(jwtToken)
+          .refreshToken(refreshToken)
+          .mfaEnable(false)
+          .build();
   }
 
   private void revokeAllUserTokens(User user){
