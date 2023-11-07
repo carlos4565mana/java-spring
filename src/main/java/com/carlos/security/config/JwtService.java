@@ -36,7 +36,7 @@ public class JwtService {
     final Claims claims = extractAllClaims(token);
     return claimsResolver.apply(claims);
   }
-  public String generateToken(UserDetails userDetails){
+  public String generateToken1(UserDetails userDetails){
     return generateToken(new HashMap<>(), userDetails);
   }
 
@@ -51,7 +51,9 @@ public class JwtService {
           UserDetails userDetails,
           long expiration
   ){
+
     return Jwts
+
             .builder()
             .setClaims(extraClaims)
             .setSubject(userDetails.getUsername())
