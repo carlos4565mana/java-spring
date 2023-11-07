@@ -1,5 +1,6 @@
 package com.carlos.security.auth;
 
+import com.carlos.security.tfa.TwoFactorAuthenticationService;
 import com.carlos.security.token.Token;
 import com.carlos.security.token.TokenRepository;
 import com.carlos.security.token.TokenType;
@@ -35,6 +36,7 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final AuthenticationManager authenticationManager;
   private final TokenRepository tokenrepository;
+  private final TwoFactorAuthenticationService tafService;
   
   public AuthenticationResponse register(RegisterRequest request) {
     var user = User.builder()
@@ -47,12 +49,13 @@ public class AuthenticationService {
     .build();
     // if MFA enable --> Generate Secrete
     if(request.isMfaEnable()){
-      user.setSecret("");
+      user.setSecret(tafService.generateNewSecret());
     }
     repository.save(user);
     var jwtToken = jwtService.generateToken1(user);
     var refreshToken = jwtService.generateRefreshToken(user);
     return AuthenticationResponse.builder()
+            .secretImageUri(tafService.generateQrCodeImageUri(user.getSecret()))
             .accessToken(jwtToken)
             .refreshToken(refreshToken)
             .mfaEnable(user.isMfaEnable())
