@@ -11,10 +11,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthenticationResponse {
-  @JsonProperty("acess_token")
-  private String acessToken;
+  //@JsonProperty("access_token")
+  private String accessToken;
 
-  @JsonProperty("refresh_token")
+  //@JsonProperty("refresh_token")
   private String refreshToken;
+
+  private boolean mfaEnable;
 
 }

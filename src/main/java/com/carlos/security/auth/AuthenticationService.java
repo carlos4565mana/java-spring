@@ -43,15 +43,19 @@ public class AuthenticationService {
     .email(request.getEmail())
     .password(passwordEncoder.encode(request.getPassword()))
     .role(request.getRole())
+    .mfaEnable(request.isMfaEnable())
     .build();
-  var savedUser =  repository.save(user);
-  var jwtToken = jwtService.generateToken1(user);
-  var refreshToken = jwtService.generateRefreshToken(user);
-  saveUserToken(savedUser, jwtToken);
-    saveUserToken(savedUser, jwtToken);
+    // if MFA enable --> Generate Secrete
+    if(request.isMfaEnable()){
+      user.setSecret("");
+    }
+    repository.save(user);
+    var jwtToken = jwtService.generateToken1(user);
+    var refreshToken = jwtService.generateRefreshToken(user);
     return AuthenticationResponse.builder()
-            .acessToken(jwtToken)
+            .accessToken(jwtToken)
             .refreshToken(refreshToken)
+            .mfaEnable(user.isMfaEnable())
             .build();
 
   }
@@ -71,7 +75,7 @@ public class AuthenticationService {
     revokeAllUserTokens(user);
     saveUserToken(user, jwtToken);
     return AuthenticationResponse.builder()
-    .acessToken(jwtToken)
+    .accessToken(jwtToken)
     .build();
   }
 
@@ -115,7 +119,7 @@ public class AuthenticationService {
         revokeAllUserTokens(user);
         saveUserToken(user, accessToken);
         var authResponse = AuthenticationResponse.builder()
-                .acessToken(accessToken)
+                .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
         new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
